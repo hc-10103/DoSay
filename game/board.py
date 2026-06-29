@@ -3,9 +3,9 @@ from numpy.typing import NDArray
 from .action import Action
 
 class Board():
-    def __init__(self):
+    def __init__(self, init_board: NDArray[np.int8]| None = None):
         self.size = (10, 17)
-        self.board = self._generate_board()
+        self.board = init_board or self._generate_board()
 
     def do_action(self, action: Action) -> bool | NDArray[np.int8]:
         if not self.is_valid_action(action):
