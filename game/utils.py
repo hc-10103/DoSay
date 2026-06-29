@@ -1,4 +1,4 @@
-from board import Board
+from .board import Board
 
 def print_board(board: Board):
     for line in board.board:

@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
-from action import Action
+from .action import Action
 
 class Board():
     def __init__(self):
