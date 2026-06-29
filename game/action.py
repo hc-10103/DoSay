@@ -2,5 +2,6 @@ from dataclasses import dataclass
 
 @dataclass
 class Action:
-    start: tuple[int, int]
-    end: tuple[int, int]
+    # (row, col)
+    top_left: tuple[int, int]
+    bottom_right: tuple[int, int]
