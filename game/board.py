@@ -3,9 +3,20 @@ from numpy.typing import NDArray
 from .action import Action
 
 class Board():
-    def __init__(self, init_board: NDArray[np.int8]| None = None):
-        self.size = (10, 17)
-        self.board = init_board or self._generate_board()
+    def __init__(self, init_board: NDArray[np.int8] | None = None, board_size: tuple[int, int] | None = None):
+        if init_board is None and board_size is None:
+            raise Exception("Both board_size and init_board cannot be None.")
+        elif init_board is None:
+            self.size = board_size # type: ignore
+            self.board = _generate_board(self.size)
+        elif board_size is None:
+            self.size: tuple[int, int] = init_board.shape
+            self.board = init_board
+        else:
+            if init_board.shape != board_size:
+                raise Exception("board_size does not match init_board.size.")
+            self.size = board_size
+            self.board = init_board
 
     def do_action(self, action: Action) -> bool | NDArray[np.int8]:
         if not self.is_valid_action(action):
@@ -55,7 +66,7 @@ class Board():
         action_valid = area.sum() == 10
 
         return action_valid
-
-    def _generate_board(self) -> NDArray[np.int8]:  # 17x10
-        _board = np.random.randint(1, 10, size=self.size, dtype=np.int8)
-        return _board
+    
+def _generate_board(size) -> NDArray[np.int8]:
+    _board = np.random.randint(1, 10, size=size, dtype=np.int8)
+    return _board
