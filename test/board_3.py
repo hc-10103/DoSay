@@ -1,10 +1,13 @@
-import os, sys, random
+import os, sys, random, time
 import numpy as np
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from game import Board
 
-board = Board(board_size=(30, 40))
+board = Board(board_size=(30, 40), seed=0)
+
+random.seed(0)
+start = time.time()
 
 while True:
     valid_actions = board.get_valid_actions()
@@ -15,5 +18,8 @@ while True:
         board.print_board()
         break
 
+end = time.time()
+
 print("GAME OVER!")
+print(f"time elapsed: {(end-start):.2f}s")
 print(f"LEFT APPLE: {np.count_nonzero(board.grid != 0)}")
