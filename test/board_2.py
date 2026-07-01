@@ -2,7 +2,7 @@ import os, sys, random
 import numpy as np
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from game import Board, Action, utils
+from game import Board
 
 
 apple_grid = np.array([
@@ -20,7 +20,7 @@ apple_grid = np.array([
 
 board = Board(init_board=apple_grid)
 
-utils.print_board(board)
+board.print_board()
 
 result = []
 for i in range(100):
@@ -30,10 +30,10 @@ for i in range(100):
             action = random.choice(valid_actions)
             board.do_action(action)
         else:
-            utils.print_board(board)
+            board.print_board()
             print()
             break
-result.append(np.count_nonzero(board.board != 0))
+result.append(np.count_nonzero(board.grid != 0))
 
 print("GAME OVER!")
 print(f"LEFT APPLE(avg): {(sum(result)/len(result)):.1f}")
