@@ -1,17 +1,23 @@
 import numpy as np
 from numpy.typing import NDArray
 from .action import Action
-from ._utils import rect_sum, has_apple_in_row, has_apple_in_col
 
 class Board():
-    def __init__(self, init_board: NDArray[np.int8] | None = None, board_size: tuple[int, int] | None = None):
+    def __init__(self, init_board: NDArray[np.int8] | None = None, board_size: tuple[int, int] | None = None, seed = None):
+        self.sum_prefix: NDArray[np.int32]
+        self.grid: NDArray[np.int8]
+        self.size: tuple[int, int]
+
+        if seed is not None:
+            np.random.seed(seed)
+
         if init_board is None and board_size is None:
             raise Exception("Both board_size and init_board cannot be None.")
         elif init_board is None:
             self.size = board_size # type: ignore
             self.grid = _generate_board(self.size)
         elif board_size is None:
-            self.size: tuple[int, int] = init_board.shape
+            self.size = init_board.shape
             self.grid = init_board
         else:
             if init_board.shape != board_size:
@@ -19,12 +25,29 @@ class Board():
             self.size = board_size
             self.grid = init_board
 
-    def do_action(self, action: Action) -> bool | NDArray[np.int8]:
-        if not self.is_valid_action(action):
-            return False
+        R, C = self.size
+        self.sum_prefix = np.empty((R+1, C+1), dtype=np.int32)
+        self._update_prefix()
+
+    def _update_prefix(self):
+        new_prefix = np.zeros(self.sum_prefix.shape, dtype=np.int32)
+        np.cumsum(self.grid, axis=0, out=new_prefix[1:, 1:])
+        np.cumsum(new_prefix[1:, 1:], axis=1, out=new_prefix[1:, 1:])
+        self.sum_prefix = new_prefix
         
-        self.get_area(action)[:] = 0
-        return self.grid
+    def do_action(self, action: Action) -> None:
+        # if not self.is_valid_action(action):
+        #     return False
+        (r1, c1), (r2, c2) = action.top_left, action.bottom_right
+        self.grid[r1:r2+1, c1:c2+1] = 0
+        self._update_prefix()
+
+    def _get_area_sum(self, top_left: tuple[int, int], bottom_right: tuple[int, int]) -> int:
+        (r1, c1), (r2, c2) = top_left, bottom_right
+        return (self.sum_prefix[r2 + 1, c2 + 1]
+                - self.sum_prefix[r1, c2 + 1]
+                - self.sum_prefix[r2 + 1, c1]
+                + self.sum_prefix[r1, c1])
 
     # 아 몰라 일단 구현해!!!!!!!!!
     def get_valid_actions(self) -> list[Action]:
@@ -33,31 +56,21 @@ class Board():
             for r2 in range(r1, self.size[0]):
                 for c1 in range(self.size[1]):
                     for c2 in range(c1, self.size[1]):
-                        action = Action((r1, c1), (r2, c2))
-                        area = self.get_area(action)
-                        area_sum = area.sum()
+                        area_sum = self._get_area_sum((r1, c1), (r2, c2))
 
                         if area_sum == 10:
+                            action = Action((r1, c1), (r2, c2))
                             valid_actions.append(action)
                         elif area_sum > 10:
                             break
 
         return valid_actions
-
-    def get_area(self, action: Action) -> NDArray[np.int8]:
-        r1 = action.top_left[0]  # 시작 row
-        c1 = action.top_left[1]  # 시작 column
-
-        r2 = action.bottom_right[0]  # 시작 row
-        c2 = action.bottom_right[1]  # 시작 column
-
-        return self.grid[r1:r2+1, c1:c2+1]
     
-    def is_valid_action(self, action: Action) -> bool:
-        area = self.get_area(action)
-        action_valid = area.sum() == 10
+    # def is_valid_action(self, action: Action) -> bool:
+    #     area = self.get_area(action)
+    #     action_valid = area.sum() == 10
 
-        return action_valid
+    #     return action_valid
     
     def print_board(self):
         for line in self.grid:
