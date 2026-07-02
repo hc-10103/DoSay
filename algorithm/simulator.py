@@ -5,7 +5,7 @@ import numpy as np
 from algorithm.evaluate_result import EvaluateSummary, GameResult
 from algorithm.evaluator import pick_best_action
 from dataclasses import dataclass
-from game.board import Board
+from game.board import Board, HEIGHT, WIDTH
 
 
 @dataclass
@@ -62,10 +62,10 @@ class Simulator:
             if result.is_all_clear:
                 all_clear_count += 1
 
-        return self._evaluate_summary(scores, turns, times, ratios, n_games)
+        return self._evaluate_summary(scores, turns, times, ratios, all_clear_count, n_games)
     
 
-    def _evaluate_summary(self, scores, turns, times, ratios, n_games) -> EvaluateSummary:
+    def _evaluate_summary(self, scores, turns, times, ratios, all_clear_count, n_games) -> EvaluateSummary:
         max_score = max(scores)
         min_score = min(scores)
         avg_score = np.mean(scores)
@@ -88,8 +88,8 @@ class Simulator:
             weights=self.weights
         )
     
-    if __name__ == "__main__":
-        simulator = Simulator(weights={"feature1": 1.0, "feature2": 0.5})  # 예시 가중치
-        summary = simulator.simulate(n_games=100)
-        print(summary)
+if __name__ == "__main__":
+    simulator = Simulator(weights={"feature1": 1.0, "feature2": 0.5})  # 예시 가중치
+    summary = simulator.simulate(n_games=100)
+    print(summary)
     
